@@ -46,10 +46,10 @@ const ICursor = (superclass) => class Cursor extends superclass {
   //---  Traversal  ------------------------------------------------------------
   /**
    * back
-   * Move to last position in history
+   * Move to previous position in history
    *
    *
-   * @returns {Cursor}
+   * @returns {ConstructorClass}
    */
   back() {
     const prevHistory = this.history.last()
