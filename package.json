@@ -1,7 +1,7 @@
 {
-  "name": "iris",
+  "name": "iris-core",
   "version": "0.1.0",
-  "description": "Data access abstraction",
+  "description": "Data abstraction",
   "main": "index.js",
   "scripts": {
     "test": "mocha --recursive -R dot --bail --compilers js:babel-register --watch"
