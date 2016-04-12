@@ -6,6 +6,11 @@
 
 import { OrderedSet, List, Map } from "immutable"
 
+/**
+ * MixinResolver
+ * used internally to extract and resolve mixin dependencies for classes.
+ *
+ */
 class MixinResolver {
   path: List;
   base: Class<any>;
@@ -22,7 +27,7 @@ class MixinResolver {
    * mixins, combines based on load path order, then resolves bottom
    * up to form the final mixin class path.
    *
-   * @returns {undefined}
+   * @returns {void}
    */
   resolve(): void {
     const resolver = (current, coll) => {
@@ -64,6 +69,11 @@ const ancestors = (klass) => {
   return back(OrderedSet([klass.name]), klass)
 }
 
+/**
+ * Metal
+ * mixed into the root position of all mixed in classes. Adds helper
+ * functionality.
+ */
 export class Metal {
   static __iris_implements: OrderedSet;
   opts: Map;
@@ -72,11 +82,17 @@ export class Metal {
     this.opts = opts
   }
 
-  static isImplemented(iface) {
-    return this.ancestors.has(iface)
+  /**
+   * isImplemented
+   * returns boolean if interface has been mixed into current class
+   *
+   * @param _interface
+   */
+  static isImplemented(_interface: String): Boolean {
+    return this.ancestors.has(_interface)
   }
 
-  static get ancestors() {
+  static get ancestors(): OrderedSet {
     return this.__iris_implements
   }
 }
