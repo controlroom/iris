@@ -1,7 +1,6 @@
 /**
  * module containing all functionality for implementing iris mixins
  * @module iris/mixin
- * @flow
  */
 
 import { OrderedSet, List, Map } from "immutable"
@@ -12,10 +11,7 @@ import { OrderedSet, List, Map } from "immutable"
  *
  */
 class MixinResolver {
-  path: List;
-  base: Class<any>;
-
-  constructor(base: Class<any>) {
+  constructor(base) {
     this.base = base
     this.resolve()
   }
@@ -29,7 +25,7 @@ class MixinResolver {
    *
    * @returns {void}
    */
-  resolve(): void {
+  resolve() {
     const resolver = (current, coll) => {
       return current.reduce((coll, klass) => {
         if (klass.__iris_implemented)
@@ -39,15 +35,15 @@ class MixinResolver {
     }
     const baseDep = this.base.__iris_implemented
     if (baseDep) {
-      const allDeps = resolver(baseDep, List([this.base]))
+      const allDeps   = resolver(baseDep, List([this.base]))
       const cleanDeps = OrderedSet(allDeps.reverse()).toList()
-      this.path = cleanDeps
+      this.path       = cleanDeps
     } else {
       this.path = List([this.base])
     }
   }
 
-  buildResolvedClass(): Class<any> {
+  buildResolvedClass() {
     const klass = this.path.reduce((c, mix) => {
       return mix(c)
     }, Metal)
@@ -75,10 +71,7 @@ const ancestors = (klass) => {
  * functionality.
  */
 export class Metal {
-  static __iris_implements: OrderedSet;
-  opts: Map;
-
-  constructor(opts: Map = Map()) {
+  constructor(opts = Map()) {
     this.opts = opts
   }
 
@@ -88,11 +81,11 @@ export class Metal {
    *
    * @param _interface
    */
-  static isImplemented(_interface: String): Boolean {
+  static isImplemented(_interface) {
     return this.ancestors.has(_interface)
   }
 
-  static get ancestors(): OrderedSet {
+  static get ancestors() {
     return this.__iris_implements
   }
 }
@@ -104,7 +97,7 @@ export class Metal {
  * @param {function}[classes]
  * @returns {undefined}
  */
-const implement: Function = (...classes) => (base) => {
+const implement = (...classes) => (base) => {
   let newBase = base.bind({})
   newBase.__iris_implemented = classes
   return newBase
@@ -116,7 +109,7 @@ const implement: Function = (...classes) => (base) => {
  * @param klass
  * @returns {undefined}
  */
-const build: Function = klass => {
+const build = klass => {
   let resolver = new MixinResolver(klass)
   return resolver.buildResolvedClass()
 }
