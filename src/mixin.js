@@ -81,12 +81,12 @@ export class Metal {
    *
    * @param _interface
    */
-  static isImplemented(_interface) {
+  isImplemented(_interface) {
     return this.ancestors.has(_interface)
   }
 
-  static get ancestors() {
-    return this.__iris_implements
+  get ancestors() {
+    return this.constructor.__iris_implements
   }
 }
 

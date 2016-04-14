@@ -46,12 +46,13 @@ describe("builder", () => {
 describe("ancestors", () => {
   it("can show implemented interfaces", () => {
     const built = build(M3)
-    expect(built.ancestors).toEqual(OrderedSet(["M3", "M2", "M1", "Metal"]))
+    expect(new built().ancestors).toEqual(OrderedSet(["M3", "M2", "M1", "Metal"]))
   })
 })
 
 describe("isImplemented", () => {
   it("can query implemented interfaces", () => {
-    expect(build(M3).isImplemented("M1")).toBe(true)
+    const built = build(M3)
+    expect(new built().isImplemented("M1")).toBe(true)
   })
 })
