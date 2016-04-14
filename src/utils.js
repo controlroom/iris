@@ -2,6 +2,9 @@ import { Map, fromJS } from "immutable"
 
 export const ensureArray     = (vals) => Array.isArray(vals) ? vals : [vals]
 export const ensureImmutable = (val)  => Array.isArray(val) ? fromJS(val) : val
+export const isImplemented   = (v, type) => {
+  return (v && typeof v == "object" && "isImplemented" in v && v.isImplemented(type))
+}
 
 /**
  * checkOpts
