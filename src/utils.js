@@ -19,8 +19,8 @@ export const isImplemented   = (v, type) => {
  * check fails.
  *
  * @param opts
- * @param items {[string]}
- * @param type {string}
+ * @param {string} items
+ * @param {string} type
  * @returns {Map}
  */
 export const checkOpts = (opts, items = [], type) => {
@@ -29,4 +29,13 @@ export const checkOpts = (opts, items = [], type) => {
     if(!ensuredMap.has(item)) throw new Error(`${type} mixin requires ${item} in options`)
   })
   return ensuredMap
+}
+
+
+export const delegate = (klass, fns) => {
+  fns.forEach(fn => {
+    klass.prototype[fn] = function(...args) {
+      return this.items[fn](...args)
+    }
+  })
 }

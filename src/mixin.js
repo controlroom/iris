@@ -5,15 +5,26 @@
 
 import { OrderedSet, List, Map } from "immutable"
 
+let implementBase
+
 /**
  * MixinResolver
  * used internally to extract and resolve mixin dependencies for classes.
  *
+ * @private
  */
 class MixinResolver {
   constructor(base) {
     this.base = base
+    this.checkForBase()
     this.resolve()
+  }
+
+  checkForBase() {
+    if (this.base.name === "implementBase") {
+      const anon = (superclass) => class Anonymous extends superclass {}
+      this.base = this.base(anon)
+    }
   }
 
   /**
@@ -97,10 +108,14 @@ export class Metal {
  * @param {function}[classes]
  * @returns {undefined}
  */
-const implement = (...classes) => (base) => {
-  let newBase = base.bind({})
-  newBase.__iris_implemented = classes
-  return newBase
+const implement = (...classes) => {
+  function implementBase (base) {
+    let newBase = base.bind({})
+    newBase.__iris_implemented = classes
+    return newBase
+  }
+
+  return implementBase
 }
 
 /**

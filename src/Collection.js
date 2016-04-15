@@ -5,14 +5,7 @@
 
 import { IAccess }          from "./Access"
 import { build, implement } from "./mixin"
-
-const delegate = (klass, fns) => {
-  fns.forEach(fn => {
-    klass.prototype[fn] = function(...args) {
-      return this.items[fn](...args)
-    }
-  })
-}
+import { delegate }         from "./utils"
 
 let ICollection = (superclass) => {
   class Collection extends superclass {

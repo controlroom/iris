@@ -56,3 +56,10 @@ describe("isImplemented", () => {
     expect(new built().isImplemented("M1")).toBe(true)
   })
 })
+
+describe("Anonymous Mixins", () => {
+  it("can build from unimplemented mixins", () => {
+    const built = build(implement(M2, M3))
+    expect(new built().isImplemented("M1")).toBe(true)
+  })
+})

@@ -12,7 +12,8 @@ import expect from "expect"
 import { renderIntoDocument, mockComponent } from "react-addons-test-utils"
 
 import iris from "../src/iris"
-import { buildModel, modelReducer } from "../src/Model"
+import Model from "../src/Model"
+import reducer from "../src/reducer"
 import { Provider } from "react-redux"
 import { Map } from "immutable"
 
