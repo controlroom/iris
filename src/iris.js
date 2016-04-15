@@ -10,13 +10,13 @@ import { isImplemented }                    from "./utils"
 export default (irisFn) => {
   return (Child) => {
     class Iris extends Component {
-      // shouldComponentUpdate(nextProps, nextState, nextContext) {
-      //   return this.shouldRender
-      // }
+      shouldComponentUpdate(nextProps, nextState, nextContext) {
+        return this.shouldRender
+      }
 
       constructor(props, context) {
         super(props, context)
-        this.store  = props.store || context.store
+        this.store = props.store || context.store
       }
 
       get preparedProps() {
@@ -24,34 +24,47 @@ export default (irisFn) => {
       }
 
       reEvaluate(props, firstRun = false) {
-        const nextFinal = Object.assign({}, this.preparedProps, props)
-        const nextPreparedData = Map(nextFinal).map((v, k) => {
-          return isImplemented(v, "Store") ? v.updateState().data : v
-        })
+        // Gather all Props
+        const nextProps = Map({...this.preparedProps, ...props})
 
-        if(firstRun || !is(this.currentPreparedData, nextPreparedData)) {
-          // Check each snitched path
-          const snitches = Map(this.finalProps).filter((v, k) => {
-            return isImplemented(v, "Snitch")
+        // Split props based on Plain JS and Snitchable
+        const [jsProps, irisProps] = nextProps.reduce((memo, v, k) => {
+          isImplemented(v, "Snitch")
+            ? memo[1] = memo[1].set(k, v)
+            : memo[0] = memo[0].set(k, v)
+          return memo
+        }, [Map(), Map()])
+
+        // Gather updated states for Iris props
+        const nextIrisData = irisProps.map((v, k) => v.updateState().data)
+
+        const isIrisUpdated = !is(this.currentIrisData, nextIrisData)
+        const isJSUpdated   = !is(this.currentJSProps,  jsProps)
+
+        if(firstRun || isIrisUpdated || isJSUpdated) {
+          const changed = Map(this.finalProps).filter((v, k) => {
+            if(isImplemented(v, "Snitch")) {
+              const before  = v.state
+              const current = v.updateState().state
+
+              if(!v.snitch) return true
+
+              return v.snitch.some(path => {
+                return !is(before.getIn(path), current.getIn(path))
+              })
+            }
           })
 
-          const changed = !snitches.some((v, k) => {
-            const before  = v.state
-            const current = v.updateState().state
-
-            return !v.snitch.some(path => {
-              return !is(before.getIn(path), current.getIn(path))
-            })
-          })
-
-          if (firstRun || changed) {
-            this.finalProps = Map(nextFinal).map((v, k) => {
+          if (firstRun || isJSUpdated || !changed.isEmpty()) {
+            this.shouldRender = true
+            this.finalProps = nextProps.map((v, k) => {
               v = isImplemented(v, "Store")  ? v.updateState() : v
               v = isImplemented(v, "Snitch") ? v.resetSnitch() : v
               return v
-            }).toJS()
+            }).toObject()
 
-            this.currentPreparedData = nextPreparedData
+            this.currentIrisData = nextIrisData
+            this.currentJSProps  = jsProps
 
             // only rerender after intial render setup
             !firstRun && this.forceUpdate()

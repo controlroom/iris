@@ -62,7 +62,7 @@ describe("iris", () => {
   })
 
   const spyClass = () => {
-    const renderSpy = expect.createSpy()
+    let renderSpy = expect.createSpy()
     class SpyClass extends Component {
       render() {
         renderSpy()
@@ -77,7 +77,7 @@ describe("iris", () => {
     return [renderSpy, SpyClass]
   }
 
-  describe.skip("basic changes", () => {
+  describe("basic changes", () => {
     let renderSpy, spyFn, model, Ele, store, node
     before(() => {
       const [rS, DidRender] = spyClass()
@@ -133,7 +133,8 @@ describe("iris", () => {
       model        = new Model({store})
       const [s1, E1] = spyClass()
       const [s2, E2] = spyClass()
-      spy1 = s1; spy2 = s2
+      spy1 = s1;
+      spy2 = s2;
       Ele1         = iris()(E1)
       Ele2         = iris()(E2)
       fn1          = params => params.model.get("attr1") || "rad"
@@ -156,6 +157,7 @@ describe("iris", () => {
       expect(spy1.calls.length).toEqual(3)
       model.set("attr2", 800)
       expect(spy2.calls.length).toEqual(2)
+
     })
   })
 })
