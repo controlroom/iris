@@ -1,8 +1,34 @@
 import { Map, fromJS } from "immutable"
 
-export const ensureArray     = (vals) => Array.isArray(vals) ? vals : [vals]
-export const ensureImmutable = (val)  => Array.isArray(val) ? fromJS(val) : val
-export const isImplemented   = (v, type) => {
+/**
+ * ensureArray
+ *
+ * @param {(array|string)} val
+ * @returns {Array}
+ */
+export const ensureArray = vals => {
+  return Array.isArray(vals) ? vals : [vals]
+}
+
+/**
+ * ensureImmutable
+ *
+ * @param {(array|string|List)} val
+ * @returns {List}
+ */
+export const ensureImmutable = val => {
+  return Array.isArray(val) ? fromJS(val) : val
+}
+
+/**
+ * isImplemented
+ * helper to check if class has mixed in a specific interface
+ *
+ * @param {object} v
+ * @param {string} type
+ * @returns {boolean}
+ */
+export const isImplemented = (v, type) => {
   return (v && typeof v == "object" && "isImplemented" in v && v.isImplemented(type))
 }
 
@@ -32,10 +58,19 @@ export const checkOpts = (opts, items = [], type) => {
 }
 
 
-export const delegate = (klass, fns) => {
+/**
+ * delegate
+ * Delegate function calls (fns) to delegator of klass
+ *
+ * @param {function} klass
+ * @param {string} delegator
+ * @param {string[]} fns
+ * @returns {void}
+ */
+export const delegate = (klass, delegator, fns) => {
   fns.forEach(fn => {
     klass.prototype[fn] = function(...args) {
-      return this.items[fn](...args)
+      return this[delegator][fn](...args)
     }
   })
 }

@@ -10,6 +10,7 @@ export { IAccess }                   from "./Access"
 export { IAffect }                   from "./Affect"
 export { ICursor }                   from "./Cursor"
 export { IStore }                    from "./Store"
+export { ISnitch }                   from "./Snitch"
 
 export iris                          from "./iris"
 export reducer, { registerReducer }  from "./reducer"

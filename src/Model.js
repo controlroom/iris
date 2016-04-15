@@ -8,7 +8,7 @@ import { IAffect }          from "./Affect"
 import { ISnitch }          from "./Snitch"
 import { build, implement } from "./mixin"
 
-let IModel = (superclass) => class Model extends superclass { }
+let IModel = (superclass) => class Model extends superclass {}
 
 IModel = implement(IAccess, IAffect, ISnitch)(IModel)
 

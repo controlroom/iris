@@ -8,7 +8,19 @@ import { build, implement } from "./mixin"
 import { delegate }         from "./utils"
 
 let ICollection = (superclass) => {
+
+  /**
+   * @alias ICollection
+   * @mixin
+   * @mixes IAccess
+   */
   class Collection extends superclass {
+
+    /**
+     * items
+     *
+     * @returns {(Model|Map)}
+     */
     get items() {
       if (this.constructor.model) {
         return this.data.map((v, k) => {
@@ -22,7 +34,7 @@ let ICollection = (superclass) => {
     }
   }
 
-  delegate(Collection, [
+  delegate(Collection, "items", [
     "keys",
     "values",
     "entries",
