@@ -3,12 +3,14 @@
  * @module iris/Model
  */
 
-import { IData }            from "./Data"
+import { IAccess }          from "./Access"
+import { IAffect }          from "./Affect"
+import { ISnitch }          from "./Snitch"
 import { build, implement } from "./mixin"
 
 let IModel = (superclass) => class Model extends superclass { }
 
-IModel = implement(IData)(IModel)
+IModel = implement(IAccess, IAffect, ISnitch)(IModel)
 
 export { IModel }
 export default build(IModel)

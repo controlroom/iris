@@ -3,7 +3,7 @@
  * @module iris/Collection
  */
 
-import { IData }            from "./Data"
+import { IAccess }          from "./Access"
 import { build, implement } from "./mixin"
 
 const delegate = (klass, fns) => {
@@ -82,7 +82,7 @@ let ICollection = (superclass) => {
   return Collection
 }
 
-ICollection = implement(IData)(ICollection)
+ICollection = implement(IAccess)(ICollection)
 
 export { ICollection }
 export default build(ICollection)
