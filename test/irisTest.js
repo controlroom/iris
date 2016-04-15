@@ -60,34 +60,38 @@ describe("iris", () => {
     )
   })
 
-  describe.skip("changes", () => {
-    let renderSpy, model, Ele, store, node
-    before(() => {
-      renderSpy = expect.createSpy()
-      class DidRender extends Component {
-        render() {
-          renderSpy()
-          return <div>
-            {this.props.model.getIn(["v1", "v2"])}
+  const spyClass = () => {
+    const renderSpy = expect.createSpy()
+    class SpyClass extends Component {
+      render() {
+        renderSpy()
+        return (
+          <div>
+            {this.props.spyFn && this.props.spyFn(this.props)}
           </div>
-        }
+        )
       }
+    }
 
+    return [renderSpy, SpyClass]
+  }
+
+  describe.skip("basic changes", () => {
+    let renderSpy, spyFn, model, Ele, store, node
+    before(() => {
+      const [rS, DidRender] = spyClass()
+      renderSpy = rS
       const irisFn = (store, _) => {
-        model = buildModel(store)
-        return {model}
+        model = new Model({store})
+        return {model: model}
       }
-      Ele = iris(irisFn)(DidRender)
-      const reducer = (state, action) => {
-        const runner = modelReducer[action.type]
-        if (runner) return runner(state, action)
-        return state
-      }
+      spyFn = (props) => props.model.get(["v1", "v2"])
+      Ele   = iris(irisFn)(DidRender)
       store = createStore(reducer, Map())
-      node = global.document.createElement("div")
+      node  = global.document.createElement("div")
       render(
         <Provider store={store}>
-          <Ele />
+          <Ele {...{spyFn}} />
         </Provider>,
         node
       )
@@ -99,9 +103,10 @@ describe("iris", () => {
     })
 
     it("rerenders after prop change", () => {
+      const newProp = "rad"
       render(
         <Provider store={store}>
-          <Ele newProp="rad" />
+          <Ele {...{spyFn, newProp}} />
         </Provider>,
         node
       )
@@ -109,16 +114,47 @@ describe("iris", () => {
     })
 
     it("does not rerender unless unique prop change", () => {
+      const newProp = "rad"
       render(
         <Provider store={store}>
-          <Ele newProp="rad" />
+          <Ele {...{spyFn, newProp}} />
         </Provider>,
         node
       )
       expect(renderSpy.calls.length).toEqual(3)
     })
+  })
 
+  describe("Simple Snitch changes", () => {
+    let Ele1, spy1, fn1, Ele2, spy2, fn2, model
+    before(() => {
+      const store  = createStore(reducer, Map())
+      model        = new Model({store})
+      const [s1, E1] = spyClass()
+      const [s2, E2] = spyClass()
+      spy1 = s1; spy2 = s2
+      Ele1         = iris()(E1)
+      Ele2         = iris()(E2)
+      fn1          = params => params.model.get("attr1") || "rad"
+      fn2          = params => params.model.get("attr2") || "rad"
+      const node   = global.document.createElement("div")
+      render(
+        <Provider {...{store}}>
+          <div>
+            <Ele1 {...{spyFn: fn1, model}} />
+            <Ele2 {...{spyFn: fn2, model}} />
+          </div>
+        </Provider>,
+        node
+      )
+    })
+
+    it("rerenders only after affected model change", () => {
+      model.set("attr1", 400)
+      model.set("attr1", 500)
+      expect(spy1.calls.length).toEqual(3)
+      model.set("attr2", 800)
+      expect(spy2.calls.length).toEqual(2)
+    })
   })
 })
-
-
