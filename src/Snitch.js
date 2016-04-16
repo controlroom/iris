@@ -19,7 +19,7 @@ let ISnitch = (superclass) => {
     constructor(raw) {
       const opts = checkOpts(raw)
       super(opts)
-      this._snitch = opts.get("snitch")
+      this._snitch = opts.get("snitch", Set())
     }
 
     /**
@@ -28,7 +28,9 @@ let ISnitch = (superclass) => {
      * @returns {ConstructorClass}
      */
     resetSnitch() {
-      return this.constructor(this.opts.set("snitch", Set()))
+      return new this.constructor(
+        this.opts.set("snitch", Set())
+      )
     }
 
     /**
