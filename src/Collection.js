@@ -17,14 +17,26 @@ let ICollection = (superclass) => {
   class Collection extends superclass {
 
     /**
+     * model
+     * If using custom model for collection then override this get property
+     * with the correct returning type.
+     *
+     * @virtual
+     * @returns {(null|Model)}
+     */
+    get model() {
+      return null
+    }
+
+    /**
      * items
      *
-     * @returns {(Model|Map)}
+     * @returns {(List<Model>|List<Any>)}
      */
     get items() {
-      if (this.constructor.model) {
+      if (this.model) {
         return this.data.map((v, k) => {
-          return new this.constructor.model(
+          return new this.model(
             this.opts.set("path", this.appendPath(k))
           )
         })
