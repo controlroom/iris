@@ -25,6 +25,15 @@ let IAccess = (superclass) => {
     }
 
     /**
+     * Return immutable data at the current path. RAW ACCESS: Created not to
+     * override.
+     * @type {Immutable.Collection}
+     */
+    get _data() {
+      return this.state.getIn(this.path)
+    }
+
+    /**
      * Return immutable data using path from data root
      * @arg {(Array|string)} path
      * @type {Immutable.Collection}

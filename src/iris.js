@@ -4,7 +4,7 @@
  */
 
 import React, { createElement, Component }  from 'react'
-import { Map, is, Set }                     from "immutable"
+import { Map, is, Set, fromJS }             from "immutable"
 import { isImplemented }                    from "./utils"
 
 class DataRevaluator {
@@ -13,6 +13,7 @@ class DataRevaluator {
     this.previousState   = Map()
     this.currentIrisData = Map()
     this.currentJSProps  = Map()
+    this.snitches        = Map()
   }
 
   /**
@@ -29,19 +30,19 @@ class DataRevaluator {
   evaluate(props) {
     const renderProps          = this.component.renderProps
     const currentState         = this.component.store.getState()
-    const [jsProps, irisProps] = this.extractPropTypes(props)
+    const [JSProps, irisProps] = this.extractPropTypes(props)
 
     const nextIrisData  = irisProps.map(e => currentState.getIn(e.path))
     const isIrisUpdated = !is(this.currentIrisData, nextIrisData)
-    const isJSUpdated   = !is(this.currentJSProps,  jsProps)
+    const isJSUpdated   = !is(this.currentJSProps,  JSProps)
 
     if(isIrisUpdated || isJSUpdated) {
-      const changed = this.extractChangedIris(renderProps, currentState)
+      const changed = this.extractChangedIris(irisProps, currentState)
 
       if (isJSUpdated || changed) {
         this.previousState   = currentState
         this.currentIrisData = nextIrisData
-        this.currentJSProps  = jsProps
+        this.currentJSProps  = JSProps
 
         const finalProps = {
           ...props,
@@ -65,7 +66,9 @@ class DataRevaluator {
 
     const finalProps = {
       ...props,
-      ...irisProps.map(v => v.resetSnitch()).toObject()
+      ...irisProps.map((v, k) => {
+        return v.resetSnitch(this._pushSnitchPath(k))
+      }).toObject()
     }
 
     this.component.renderProps = finalProps
@@ -78,23 +81,22 @@ class DataRevaluator {
    * return a map with changed Iris object or false if nothing.  Also to save
    * time, we update the object with new State and Snitch
    *
-   * @param {object} map
+   * @param {Map} irisProps
    * @param {Map} currentState
    * @returns {(object|false)}
    */
-  extractChangedIris(map, currentState) {
-    const changes = Object.keys(map).reduce((memo, k) => {
-      const v = map[k]
-      if(isImplemented(v, "Snitch")
-         && v.snitch
-         && v.snitch.some(path => {
+  extractChangedIris(irisProps, currentState) {
+    const changes = irisProps.reduce((memo, v, k) => {
+      if(this.snitches.get(k)
+         && this.snitches.get(k).some(path => {
            return !is(this.previousState.getIn(path), currentState.getIn(path))
          })
       )
       {
+        this.snitches = this.snitches.set(k, Set())
         memo[k] = new v.constructor(
           v.opts.merge({
-            snitch: Set(),
+            snitch: this._pushSnitchPath(k),
             state: currentState
           })
         )
@@ -122,6 +124,12 @@ class DataRevaluator {
         : memo[0] = memo[0].set(k, v)
         return memo
     }, [Map(), Map()])
+  }
+
+  _pushSnitchPath(k) {
+    return path => {
+      this.snitches = this.snitches.set(k, this.snitches.get(k, Set()).add(path))
+    }
   }
 }
 

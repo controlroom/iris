@@ -4,6 +4,7 @@
  */
 
 import { IAccess }          from "./Access"
+import { ISnitch }          from "./Snitch"
 import { build, implement } from "./mixin"
 import { delegate }         from "./utils"
 
@@ -13,6 +14,7 @@ let ICollection = (superclass) => {
    * @alias ICollection
    * @mixin
    * @mixes IAccess
+   * @mixes ISnitch
    */
   class Collection extends superclass {
 
@@ -25,7 +27,7 @@ let ICollection = (superclass) => {
      * @returns {(null|Model)}
      */
     get model() {
-      return null
+      return this.opts.get("model") || null
     }
 
     /**
@@ -35,7 +37,7 @@ let ICollection = (superclass) => {
      */
     get items() {
       if (this.model) {
-        return this.data.map((v, k) => {
+        return this._data.map((v, k) => {
           return new this.model(
             this.opts.set("path", this.appendPath(k))
           )
@@ -44,6 +46,9 @@ let ICollection = (superclass) => {
         return this.data
       }
     }
+
+    // add(data) { }
+    // inject(data) { }
   }
 
   delegate(Collection, "items", [
@@ -99,7 +104,7 @@ let ICollection = (superclass) => {
   return Collection
 }
 
-ICollection = implement(IAccess)(ICollection)
+ICollection = implement(IAccess, ISnitch)(ICollection)
 
 export { ICollection }
 export default build(ICollection)

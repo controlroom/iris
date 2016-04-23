@@ -13,9 +13,10 @@ import { renderIntoDocument, mockComponent } from "react-addons-test-utils"
 
 import iris from "../src/iris"
 import Model from "../src/Model"
+import Collection from "../src/Collection"
 import reducer from "../src/reducer"
 import { Provider } from "react-redux"
-import { Map } from "immutable"
+import { Map, fromJS } from "immutable"
 
 const mockStore = configureMockStore()
 const basicStore = mockStore()
@@ -24,6 +25,9 @@ class BasicMock extends Component {
   render() {
     return <div></div>
   }
+}
+
+const renderToDom = (toRender) => {
 }
 
 describe("iris", () => {
@@ -157,7 +161,91 @@ describe("iris", () => {
       expect(spy1.calls.length).toEqual(3)
       model.set("attr2", 800)
       expect(spy2.calls.length).toEqual(2)
+    })
+  })
 
+  describe("Collection Snitch", () => {
+    @iris()
+    class ModelClass extends Component {
+      render() {
+        return(
+          <div>
+            {this.props.item.get("name")}
+          </div>
+        )
+      }
+    }
+
+    @iris((store, props) => ({
+      collection: new Collection({store, path: ["collection"], model: Model})
+    }))
+    class CollectionClass extends Component {
+      render() {
+        const { spy, collection, fn } = this.props
+        spy()
+        return (
+          <div>
+            {collection.map(item => {
+              return (
+                <div>
+                  {fn(item)}
+                </div>
+              )
+            })}
+          </div>
+        )
+      }
+    }
+
+    let newStore = () => createStore(reducer, fromJS({
+      collection: {
+        1: {
+          id: 1,
+          name: "Kevin"
+        },
+        2: {
+          id: 2,
+          name: "Rachelle"
+        }
+      }
+    }))
+
+    it("should rerender collection on each change", () => {
+      const store   = newStore()
+      const collSpy = expect.createSpy()
+      const node    = global.document.createElement("div")
+      const fn      = item => {
+        return item.get("name")
+      }
+      render(
+        <Provider {...{store}}>
+          <CollectionClass spy={collSpy} fn={fn} />
+        </Provider>,
+        node
+      )
+      const model = new Model({store, path: ["collection", "1"]})
+      model.set("name", "radical")
+      expect(collSpy.calls.length).toBe(2)
+    })
+
+    it("should only render once when delegating", () => {
+      const store   = newStore()
+      const collSpy = expect.createSpy()
+      const node    = global.document.createElement("div")
+      const fn      = item => {
+        return (
+          <ModelClass displayName="[Model]"item={item} />
+        )
+      }
+      render(
+        <Provider {...{store}}>
+          <CollectionClass displayName="[Collection]" spy={collSpy} fn={fn} />
+        </Provider>,
+        node
+      )
+      const model = new Model({store, path: ["collection", "1"]})
+      model.set("name", "radical")
+      expect(collSpy.calls.length).toBe(1)
     })
   })
 })

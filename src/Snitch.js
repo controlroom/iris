@@ -19,24 +19,25 @@ let ISnitch = (superclass) => {
     constructor(raw) {
       const opts = checkOpts(raw)
       super(opts)
-      this._snitch = opts.get("snitch", Set())
+      this._snitch = opts.get("snitch")
     }
 
     /**
      * resetSnitch
      *
+     * @param {function} fn
      * @returns {ConstructorClass}
      */
-    resetSnitch() {
+    resetSnitch(fn) {
       return new this.constructor(
-        this.opts.set("snitch", Set())
+        this.opts.set("snitch", fn)
       )
     }
 
     /**
      * snitch
      *
-     * @type {Set}
+     * @type {function}
      */
     get snitch() {
       return this._snitch
@@ -50,7 +51,7 @@ let ISnitch = (superclass) => {
      */
     addToSnitch(path) {
       if(this.snitch) {
-        this._snitch = this._snitch.add(path)
+        this._snitch(path)
       }
     }
 

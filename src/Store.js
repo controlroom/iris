@@ -53,9 +53,7 @@ const IStore = (superclass) => {
      */
     updateState() {
       return new this.constructor(
-        this.opts.merge({
-          state: this.store.getState()
-        })
+        this.opts.set("state", this.store.getState())
       )
     }
 
