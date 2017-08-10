@@ -4,6 +4,7 @@
  */
 
 import { OrderedSet, List, Map } from "immutable"
+import { log }                   from "./utils"
 
 let implementBase
 
@@ -110,6 +111,10 @@ export class Metal {
  */
 const implement = (...classes) => {
   function implementBase (base) {
+    if(base.__iris_implemented) {
+      log("error", "Your implementation has already been implemented")
+    }
+
     let newBase = base.bind({})
     newBase.__iris_implemented = classes
     return newBase
@@ -129,4 +134,15 @@ const build = klass => {
   return resolver.buildResolvedClass()
 }
 
-export { MixinResolver, build, implement }
+/**
+ * emptyImpl
+ *
+ * Provide a simple base for implementation functions
+ *
+ * @returns {fn}
+ */
+const emptyImpl = () => (superclass) => {
+  return class Impl extends superclass { }
+}
+
+export { MixinResolver, build, implement, emptyImpl }

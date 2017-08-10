@@ -3,9 +3,10 @@
  * @module iris/iris
  */
 
-import React, { createElement, Component }  from 'react'
+import React, { createElement, Component }  from "react"
 import { Map, is, Set, fromJS }             from "immutable"
 import { isImplemented }                    from "./utils"
+import PropTypes                            from "prop-types"
 
 class DataRevaluator {
   constructor(component) {
@@ -64,6 +65,7 @@ class DataRevaluator {
     this.currentIrisData       = nextIrisData
     this.previousState         = currentState
 
+
     const finalProps = {
       ...props,
       ...irisProps.map((v, k) => {
@@ -87,11 +89,12 @@ class DataRevaluator {
    */
   extractChangedIris(irisProps, currentState) {
     const changes = irisProps.reduce((memo, v, k) => {
-      if(this.snitches.get(k)
-         && this.snitches.get(k).some(path => {
-           return !is(this.previousState.getIn(path), currentState.getIn(path))
-         })
-      )
+      if(this.snitches.get(k) && this.snitches.get(k).some(path => {
+        return !is(
+          this.previousState.getIn(path),
+          currentState.getIn(path)
+        )
+      }))
       {
         this.snitches = this.snitches.set(k, Set())
         memo[k] = new v.constructor(
@@ -128,7 +131,10 @@ class DataRevaluator {
 
   _pushSnitchPath(k) {
     return path => {
-      this.snitches = this.snitches.set(k, this.snitches.get(k, Set()).add(path))
+      this.snitches = this.snitches.set(
+        k,
+        this.snitches.get(k, Set()).add(path)
+      )
     }
   }
 }
@@ -184,7 +190,7 @@ export default (irisFn) => {
     }
 
     Iris.contextTypes = {
-      store: React.PropTypes.object.isRequired
+      store: PropTypes.object.isRequired
     };
 
     return Iris

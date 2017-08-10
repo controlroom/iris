@@ -1,6 +1,6 @@
 /**
- * Domain data accessors
- * @module iris/DomainAccess
+ * Data accessors
+ * @module iris/Access
  */
 
 import { IStore }            from "./Store"

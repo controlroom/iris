@@ -20,17 +20,20 @@ class TestCollection extends Collection {
 }
 
 describe("Collection", () => {
-  describe("basic iteration", () => {
+  describe("Basic immutable collection operations", () => {
     let coll
     before(() => {
       const store = mockStore({ a: [1, 2, 3] })
-      coll = new Collection(Map({store, path: ["a"]}))
+      coll = new Collection({store, path: ["a"]})
     })
     it("#map", () => { expect(coll.map(e => e + 1).toJS()).toEqual([2, 3, 4]) })
     it("#filter", () => { expect(coll.filter(e => e > 2).toJS()).toEqual([3]) })
   })
 
   describe("Normalized Insert", () => {
+    it("can add new data", () => { })
   })
+  describe("Normalize initial data", () => {})
+  describe("Root initializing", () => { })
+  describe("Schema relation initializing", () => { })
 })
-

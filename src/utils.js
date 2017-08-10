@@ -3,10 +3,11 @@ import { Map, fromJS } from "immutable"
 /**
  * ensureArray
  *
- * @param {(array|string)} val
+ * @param {(array|string|null)} val
  * @returns {Array}
  */
 export const ensureArray = vals => {
+  if( vals == null) return []
   return Array.isArray(vals) ? vals : [vals]
 }
 
@@ -73,4 +74,42 @@ export const delegate = (klass, delegator, fns) => {
       return this[delegator][fn](...args)
     }
   })
+}
+
+/**
+ * merge
+ * Merge together objects
+ *
+ * @param {obj[]} objs
+ * @returns {obj}
+ */
+export const merge = (...objs) => Object.assign(...objs)
+
+
+/**
+ * createNSActions
+ * create object with namespaced values based on passed in list
+ *
+ * @param {string[]} objs
+ * @returns {obj}
+ */
+export const createNSActions = (namespace, ...constants) => {
+  return constants.reduce((acc, constant) => {
+    acc[constant] = "Iris." + namespace + "/" + constant;
+    return acc;
+  }, {});
+}
+
+/**
+ * log
+ * Simple logging helper object
+ *
+ * @param {string} level
+ * @param {string[]} message
+ * @returns {void}
+ */
+export const log = (level, ...message) => {
+  if (process.env.NODE_ENV !== "production") {
+    console[level](...message);
+  }
 }

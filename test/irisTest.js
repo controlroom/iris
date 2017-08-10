@@ -9,7 +9,7 @@ import { render } from "react-dom"
 import configureMockStore from "redux-mock-store"
 import { createStore } from "redux"
 import expect from "expect"
-import { renderIntoDocument, mockComponent } from "react-addons-test-utils"
+import { renderIntoDocument, mockComponent } from "react-dom/test-utils"
 
 import iris from "../src/iris"
 import Model from "../src/Model"
@@ -25,9 +25,6 @@ class BasicMock extends Component {
   render() {
     return <div></div>
   }
-}
-
-const renderToDom = (toRender) => {
 }
 
 describe("iris", () => {

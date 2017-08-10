@@ -1,12 +1,18 @@
 /**
  * basic collections
+ *
+ * A collection is either pointing to the base collection (root), or it is a
+ * subset that is located in another place
+ *
  * @module iris/Collection
  */
 
-import { IAccess }          from "./Access"
-import { ISnitch }          from "./Snitch"
-import { build, implement } from "./mixin"
-import { delegate }         from "./utils"
+import { IAccess }             from "./Access"
+import { ISnitch }             from "./Snitch"
+import { build, implement }    from "./mixin"
+import { delegate, checkOpts } from "./utils"
+import { Map }                 from "immutable"
+import { ROOT_KEY }            from "./constants"
 
 let ICollection = (superclass) => {
 
@@ -17,28 +23,30 @@ let ICollection = (superclass) => {
    * @mixes ISnitch
    */
   class Collection extends superclass {
+    constructor(raw) {
+      const opts = checkOpts(raw)
+      super(opts)
+      const path = opts.get("path")
 
-    /**
-     * model
-     * If using custom model for collection then override this get property
-     * with the correct returning type.
-     *
-     * @virtual
-     * @returns {(null|Model)}
-     */
-    get model() {
-      return this.opts.get("model") || null
+      if(!path) {
+        this.opts = opts.set("path", [ROOT_KEY, this.entity.type])
+      }
+    }
+
+    get entity() {
+      return this.constructor.entity
     }
 
     /**
      * items
      *
-     * @returns {(List<Model>|List<Any>)}
+     * @returns {(List<Entity>|List<Any>)}
      */
     get items() {
-      if (this.model) {
-        return this._data.map((v, k) => {
-          return new this.model(
+      if (this.constructor.entity) {
+        const data = this._data || Map()
+        return data.map((v, k) => {
+          return new this.constructor.entity(
             this.opts.set("path", this.appendPath(k))
           )
         })
@@ -47,8 +55,13 @@ let ICollection = (superclass) => {
       }
     }
 
-    // add(data) { }
-    // inject(data) { }
+    inspect() {
+      return `
+        Iris.Collection(${this.constructor.name})
+          path: [${this.path.toJS()}]
+          ancestors: [${this.ancestors.toJS()}]
+      `
+    }
   }
 
   delegate(Collection, "items", [

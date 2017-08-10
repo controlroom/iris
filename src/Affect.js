@@ -1,5 +1,5 @@
 /**
- * Domain data mutators
+ * Data mutators
  * @module iris/Affect
  */
 
@@ -7,6 +7,16 @@ import { IStore }            from "./Store"
 import { ICursor }           from "./Cursor"
 import { build, implement }  from "./mixin"
 import { registerReducer }   from "./reducer"
+import { createNSActions }   from "./utils"
+
+const {
+  SET_STATE,
+  UPDATE_STATE,
+  MERGE_STATE,
+  COPY_STATE
+} = createNSActions("Affect",
+  "SET_STATE", "UPDATE_STATE", "MERGE_STATE", "COPY_STATE"
+)
 
 let IAffect = (superclass) => {
 
@@ -22,7 +32,7 @@ let IAffect = (superclass) => {
      */
     replace(value) {
       return this.dispatch({
-        type: "SET_STATE",
+        type: SET_STATE,
         path: this.path,
         data: value
       })
@@ -40,7 +50,7 @@ let IAffect = (superclass) => {
      */
     swap(fn) {
       return this.dispatch({
-        type: "UPDATE_STATE",
+        type: UPDATE_STATE,
         path: this.path,
         fn
       })
@@ -58,7 +68,7 @@ let IAffect = (superclass) => {
      */
     merge (data) {
       return this.dispatch({
-        type: "MERGE_STATE",
+        type: MERGE_STATE,
         path: this.path,
         data
       })
@@ -76,7 +86,7 @@ let IAffect = (superclass) => {
      */
     copy(from, to) {
       return this.dispatch({
-        type: "COPY_STATE",
+        type: COPY_STATE,
         from: this.appendPath(from),
         to:   this.appendPath(to)
       })
@@ -90,8 +100,8 @@ IAffect = implement(IStore, ICursor)(IAffect)
 export { IAffect }
 
 registerReducer({
-  SET_STATE:    (state, {path, data}) => state.setIn(path, data),
-  UPDATE_STATE: (state, {path, fn})   => state.updateIn(path, fn),
-  MERGE_STATE:  (state, {path, data}) => state.mergeDeepIn(path, data),
-  COPY_STATE:   (state, {from, to})   => state.setIn(to, state.getIn(from))
+  [SET_STATE]:    (state, {path, data}) => state.setIn(path, data),
+  [UPDATE_STATE]: (state, {path, fn})   => state.updateIn(path, fn),
+  [MERGE_STATE]:  (state, {path, data}) => state.mergeDeepIn(path, data),
+  [COPY_STATE]:   (state, {from, to})   => state.setIn(to, state.getIn(from))
 })
