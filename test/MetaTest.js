@@ -6,14 +6,20 @@ import { mockStore } from "./shared"
 
 const Meta = build(IMeta)
 
-const basicMeta = (klass) => {
+const basicMeta = (klass, path = []) => {
   const store = mockStore({})
-  return new klass({store})
+  return new klass({store, path})
 }
 
 describe("Meta", () => {
   it("can store generic metadata", () => {
     const o = basicMeta(Meta)
+    o.meta.set("key", "value")
+    expect(o.updateState().meta.get("key")).to.eql("value")
+  })
+
+  it("can store metadata with an established path", () => {
+    const o = basicMeta(Meta, ["a", "b", "c"])
     o.meta.set("key", "value")
     expect(o.updateState().meta.get("key")).to.eql("value")
   })

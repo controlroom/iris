@@ -35,7 +35,6 @@ let IMeta = (superclass) => {
 
   const flagDispatch = (ctx, type, keyPath) => {
     const [flags, path] = extractFlags(ctx, keyPath)
-    console.log(path)
     return ctx.dispatch({type, path, flags})
   }
 
