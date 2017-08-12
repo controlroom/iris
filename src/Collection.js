@@ -11,7 +11,7 @@ import { IAccess }             from "./Access"
 import { ISnitch }             from "./Snitch"
 import { build, implement }    from "./mixin"
 import { delegate, checkOpts } from "./utils"
-import { Map }                 from "immutable"
+import { Map, List }           from "immutable"
 import { ROOT_KEY }            from "./constants"
 
 let ICollection = (superclass) => {
@@ -33,8 +33,8 @@ let ICollection = (superclass) => {
       }
     }
 
-    get entity() {
-      return this.constructor.entity
+    get itemConstructor() {
+      return this.opts.get("itemConstructor") || this.constructor.itemConstructor
     }
 
     /**
@@ -43,24 +43,36 @@ let ICollection = (superclass) => {
      * @returns {(List<Entity>|List<Any>)}
      */
     get items() {
-      if (this.constructor.entity) {
+      if (this.itemConstructor) {
         const data = this._data || Map()
-        return data.map((v, k) => {
-          return new this.constructor.entity(
-            this.opts.set("path", this.appendPath(k))
-          )
-        })
+
+        if (Map.isMap(data)) {
+          return data.map((v, k) => {
+            return new this.itemConstructor(
+              this.opts.set("path", this.appendPath(k))
+            )
+          })
+        } else if (List.isList(data)) {
+          return data.map(id => {
+            return new this.itemConstructor(
+              this.opts.set("path", [ROOT_KEY, id.get("type"), id.get("id")])
+            )
+          })
+        } else {
+          throw new Error("I am unsure about the data in this collection")
+        }
       } else {
         return this.data
       }
     }
 
     inspect() {
-      return `
-        Iris.Collection(${this.constructor.name})
-          path: [${this.path.toJS()}]
-          ancestors: [${this.ancestors.toJS()}]
-      `
+      return(
+`
+Iris.Collection(${this.constructor.name})
+  path: [${this.path.toJS()}]
+`
+)
     }
   }
 

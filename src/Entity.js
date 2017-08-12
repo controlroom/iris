@@ -1,7 +1,7 @@
 /**
  * entity
  *
- * Basic class that implements the ability to store / access structured data
+ * Basic mixin that implements the ability to store / access structured data
  *
  * @module iris/Entity
  */
@@ -13,7 +13,8 @@ import { ISchema }                from "./Schema"
 import { ICursor }                from "./Cursor"
 import { DATA_KEY, ROOT_KEY }     from "./constants"
 import { List }                   from "immutable"
-import { isReferenceType }        from "./types"
+
+import { isReferenceType, isParentType } from "./types"
 
 let IEntity = (superclass) =>
 
@@ -45,9 +46,16 @@ let IEntity = (superclass) =>
 
     get(path) {
       const type = this.typeFromSchema(path)
+      if (type == null) throw new Error(`No type information for '${path}'`)
+
       const res  = super.getIn([DATA_KEY, path])
-      if (isReferenceType(type)) {
-        return this.go([ROOT_KEY, res.get("type"), res.get("id")], type.klass)
+
+      if (isReferenceType(type) || isParentType(type)) {
+        if (List.isList(res)) {
+          return this.traverse([DATA_KEY, path], type.klass)
+        } else {
+          return this.go([ROOT_KEY, res.get("type"), res.get("id")], type.klass)
+        }
       }
 
       return res
@@ -60,11 +68,12 @@ let IEntity = (superclass) =>
     }
 
     inspect() {
-      return `
-        Iris.Entity(${this.constructor.name})
-          path: [${this.path.toJS()}]
-          ancestors: [${this.ancestors.toJS()}]
-      `
+      return(
+`
+Iris.Entity(${this.constructor.name})
+  path: [${this.path.toJS()}]
+`
+      )
     }
   }
 

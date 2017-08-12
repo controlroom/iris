@@ -1,4 +1,13 @@
 import { Set } from "immutable"
+import { Metal } from "./mixin"
+
+const lookupClass = (klass) => {
+  if (klass.__iris_implements) {
+    return klass
+  }
+
+  return klass()
+}
 
 const types = {
   //---  Aggregators  ----------------------------------------------------------
@@ -10,7 +19,7 @@ const types = {
 
   //---  Types  ----------------------------------------------------------------
   isIdType: type => type.kind === "id",
-  Id: (type = t.String()) => ({
+  Id: (type = types.Integer()) => ({
     check: type.check,
     kind: "id"
   }),
@@ -57,9 +66,21 @@ const types = {
   }),
 
   isReferenceType: type => type.kind === "ref",
-  Reference: (klass) => ({
-    klass,
+  Reference: (klass, opts) => ({
+    opts,
+    get klass() {
+      return lookupClass(klass)
+    },
     kind: "ref"
+  }),
+
+  isParentType: type => type.kind === "parent",
+  Parent: (klass, opts) => ({
+    opts,
+    get klass() {
+      return lookupClass(klass)
+    },
+    kind: "parent"
   })
 }
 

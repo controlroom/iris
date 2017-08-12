@@ -27,6 +27,7 @@ let IAccess = (superclass) => {
     /**
      * Return immutable data at the current path. RAW ACCESS: Created not to
      * override.
+     * @private
      * @type {Immutable.Collection}
      */
     get _data() {

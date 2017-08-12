@@ -1,4 +1,4 @@
-import expect from "expect"
+import { expect } from "chai"
 import { MixinResolver, implement, build } from "../src/mixin"
 import { List, OrderedSet } from "immutable"
 
@@ -11,7 +11,7 @@ M3       = implement(M2, M1)(M3)
 describe("MixinResolver", () => {
   it("gathers correct resolve path", () => {
     const resolver = new MixinResolver(M3)
-    expect(resolver.path).toEqual(List([M1, M2, M3]))
+    expect(resolver.path).to.eql(List([M1, M2, M3]))
   })
 })
 
@@ -35,7 +35,7 @@ describe("builder", () => {
   it("works", () => {
     let a = new (build(Mixin2))
     a.setFoo(12)
-    expect(a.bar).toEqual(12)
+    expect(a.bar).to.eql(12)
   })
 
   it("handles empty mixin", () => {
@@ -46,20 +46,20 @@ describe("builder", () => {
 describe("ancestors", () => {
   it("can show implemented interfaces", () => {
     const built = build(M3)
-    expect(new built().ancestors).toEqual(OrderedSet(["M3", "M2", "M1", "Metal"]))
+    expect(new built().ancestors.toJS()).to.eql(["M3", "M2", "M1", "Metal"])
   })
 })
 
 describe("isImplemented", () => {
   it("can query implemented interfaces", () => {
     const built = build(M3)
-    expect(new built().isImplemented("M1")).toBe(true)
+    expect(new built().isImplemented("M1")).to.be.true
   })
 })
 
 describe("Anonymous Mixins", () => {
   it("can build from unimplemented mixins", () => {
     const built = build(implement(M2, M3))
-    expect(new built().isImplemented("M1")).toBe(true)
+    expect(new built().isImplemented("M1")).to.be.true
   })
 })

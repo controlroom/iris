@@ -8,7 +8,9 @@ import React, { Component, createElement } from "react"
 import { render } from "react-dom"
 import configureMockStore from "redux-mock-store"
 import { createStore } from "redux"
-import expect from "expect"
+import chai, { expect } from "chai"
+import sinon from "sinon"
+import sinonChai from "sinon-chai"
 import { renderIntoDocument, mockComponent } from "react-dom/test-utils"
 
 import iris from "../src/iris"
@@ -17,6 +19,8 @@ import Collection from "../src/Collection"
 import reducer from "../src/reducer"
 import { Provider } from "react-redux"
 import { Map, fromJS } from "immutable"
+
+chai.use(sinonChai)
 
 const mockStore = configureMockStore()
 const basicStore = mockStore()
@@ -29,7 +33,7 @@ class BasicMock extends Component {
 
 describe("iris", () => {
   it("calls irisFn with (store, props) as arguments", () => {
-    const irisFn    = expect.createSpy()
+    const irisFn    = sinon.spy()
     const Ele       = iris(irisFn)(BasicMock)
     const props     = {a: 1}
     renderIntoDocument(
@@ -37,14 +41,14 @@ describe("iris", () => {
         <Ele {...props} />
       </Provider>
     )
-    expect(irisFn).toHaveBeenCalledWith(basicStore, props)
+    expect(irisFn).to.have.been.calledWith(basicStore, props)
   })
 
   it("return from irisFn is injected into child props", (done) => {
     class CheckProps extends Component {
       constructor(props) {
         super(props)
-        expect(props.radical).toExist()
+        expect(props.radical).to.exist
         done()
       }
       render() {
@@ -63,7 +67,7 @@ describe("iris", () => {
   })
 
   const spyClass = () => {
-    let renderSpy = expect.createSpy()
+    let renderSpy = sinon.spy()
     class SpyClass extends Component {
       render() {
         renderSpy()
@@ -101,7 +105,7 @@ describe("iris", () => {
 
     it("rerenders after model change", () => {
       model.set(["v1", "v2"], 400)
-      expect(renderSpy.calls.length).toEqual(2)
+      expect(renderSpy).to.have.been.calledTwice
     })
 
     it("rerenders after prop change", () => {
@@ -112,7 +116,7 @@ describe("iris", () => {
         </Provider>,
         node
       )
-      expect(renderSpy.calls.length).toEqual(3)
+      expect(renderSpy).to.have.callCount(3)
     })
 
     it("does not rerender unless unique prop change", () => {
@@ -123,7 +127,7 @@ describe("iris", () => {
         </Provider>,
         node
       )
-      expect(renderSpy.calls.length).toEqual(3)
+      expect(renderSpy).to.have.callCount(3)
     })
   })
 
@@ -155,9 +159,10 @@ describe("iris", () => {
     it("rerenders only after affected model change", () => {
       model.set("attr1", 400)
       model.set("attr1", 500)
-      expect(spy1.calls.length).toEqual(3)
+
+      expect(spy1).to.have.callCount(3)
       model.set("attr2", 800)
-      expect(spy2.calls.length).toEqual(2)
+      expect(spy2).to.have.callCount(2)
     })
   })
 
@@ -174,7 +179,7 @@ describe("iris", () => {
     }
 
     @iris((store, props) => ({
-      collection: new Collection({store, path: ["collection"], model: Model})
+      collection: new Collection({store, path: ["collection"], itemConstructor: Model})
     }))
     class CollectionClass extends Component {
       render() {
@@ -209,7 +214,7 @@ describe("iris", () => {
 
     it("should rerender collection on each change", () => {
       const store   = newStore()
-      const collSpy = expect.createSpy()
+      const collSpy = sinon.spy()
       const node    = global.document.createElement("div")
       const fn      = item => {
         return item.get("name")
@@ -222,27 +227,26 @@ describe("iris", () => {
       )
       const model = new Model({store, path: ["collection", "1"]})
       model.set("name", "radical")
-      expect(collSpy.calls.length).toBe(2)
+      expect(collSpy).to.have.callCount(2)
     })
 
     it("should only render once when delegating", () => {
       const store   = newStore()
-      const collSpy = expect.createSpy()
-      const node    = global.document.createElement("div")
+      const collSpy = sinon.spy()
       const fn      = item => {
         return (
-          <ModelClass displayName="[Model]"item={item} />
+          <ModelClass displayName="[Model]" item={item} />
         )
       }
       render(
         <Provider {...{store}}>
           <CollectionClass displayName="[Collection]" spy={collSpy} fn={fn} />
         </Provider>,
-        node
+        global.document.createElement("div")
       )
       const model = new Model({store, path: ["collection", "1"]})
       model.set("name", "radical")
-      expect(collSpy.calls.length).toBe(1)
+      expect(collSpy).to.have.callCount(1)
     })
   })
 })

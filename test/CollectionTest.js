@@ -1,4 +1,4 @@
-import expect                 from "expect"
+import { expect }             from "chai"
 import { ICollection }        from "../src/Collection"
 import Model                  from "../src/Model"
 import { build }              from "../src/mixin"
@@ -14,9 +14,7 @@ class TestModel extends Model {
 }
 
 class TestCollection extends Collection {
-  get model() {
-    return TestModel
-  }
+  static itemConstructor = TestModel
 }
 
 describe("Collection", () => {
@@ -26,8 +24,8 @@ describe("Collection", () => {
       const store = mockStore({ a: [1, 2, 3] })
       coll = new Collection({store, path: ["a"]})
     })
-    it("#map", () => { expect(coll.map(e => e + 1).toJS()).toEqual([2, 3, 4]) })
-    it("#filter", () => { expect(coll.filter(e => e > 2).toJS()).toEqual([3]) })
+    it("#map", () => { expect(coll.map(e => e + 1).toJS()).to.eql([2, 3, 4]) })
+    it("#filter", () => { expect(coll.filter(e => e > 2).toJS()).to.eql([3]) })
   })
 
   describe("Normalized Insert", () => {

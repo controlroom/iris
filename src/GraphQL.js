@@ -9,7 +9,7 @@ import { registerReducer }   from "./reducer"
 import { ensureArray, ensureImmutable, checkOpts, createNSActions } from "./utils"
 
 import { DATA_KEY, ROOT_KEY, GQL_TYPE_KEY } from "./constants"
-import { isReferenceType } from "./types"
+import { isReferenceType, isParentType } from "./types"
 
 import { IFetch }  from "./Fetch"
 import { IStore }  from "./Store"
@@ -31,15 +31,20 @@ let IGraphQL = (superclass) => class GraphQL extends superclass {
     )
   }
 
+  static get baseFields() {
+    return this.schemaKeys.filter(k =>
+      !isParentType(this.typeFromSchema(k))
+    ).concat([GQL_TYPE_KEY])
+  }
+
   static query() {
-    const allFields = this.schemaKeys.concat([GQL_TYPE_KEY])
     const isNestedField = (type, key) =>
       key != GQL_TYPE_KEY && isReferenceType(type)
 
-    const nestedFields = allFields.map(key => {
+    const nestedFields = this.baseFields.map(key => {
       const type = this.typeFromSchema(key)
       if(isNestedField(type, key)) {
-        const entity = type.klass.entity || type.klass
+        const entity = type.klass.itemConstructor || type.klass
         return key + entity.query()
       }
 
@@ -49,52 +54,67 @@ let IGraphQL = (superclass) => class GraphQL extends superclass {
     return ("{" + nestedFields.join(" ") + "}")
   }
 
-  static normalizeExtract(item, rootSet) {
-    const [final, updatedSet] = this.refFields.reduce(([memoItem, memoSet], field) => {
-      const refData = memoItem.get(field)
-      const type    = this.typeFromSchema(field)
+  static normalizeExtract(item, rootList, reverse) {
+    // Calculate identity for current item right now
+    const itemId = Map({
+      id:   item.get("id"),
+      type: item.get(GQL_TYPE_KEY)
+    })
+
+    // If a reverse should be added to our current item, then set the data right now
+    if (reverse) {
+      item = item.set(reverse.name, reverse.identity)
+    }
+
+    const [result, updatedList] = this.refFields.reduce(([memoItem, memoList], field) => {
+      const refData   = memoItem.get(field)
+      const type      = this.typeFromSchema(field)
+      let reverseData = null
+
+      // Did the options in our Reference type specify a reverse name?
+      if(type.opts && type.opts.reverse) {
+        reverseData = {
+          name: type.opts.reverse,
+          identity: itemId
+        }
+      }
 
       if(refData && !refData.isEmpty()) {
-        const entity = type.klass.entity || type.klass
+        const entity = type.klass.itemConstructor || type.klass
 
+        // Has Many
+        //
         if(List.isList(refData)) {
-          const [identityList, updatedMemoSet] = refData.reduce(([dataIdList, dataSet], data) => {
-            const [identity, updatedDataSet] = entity.normalizeExtract(data, dataSet)
+          const [identityList, updatedMemoList] = refData.reduce(([dataIdList, dataList], data) => {
+            const [identity, updatedDataList] = entity.normalizeExtract(data, dataList, reverseData)
 
             return [
               dataIdList.push(identity),
-              updatedDataSet
+              updatedDataList
             ]
-          }, [List(), memoSet])
+          }, [List(), memoList])
 
           return [
             memoItem.set(field, identityList),
-            updatedMemoSet
+            updatedMemoList
           ]
+
+        // Has One
+        //
         } else {
-          const [identity, updatedMemoSet] = entity.normalizeExtract(refData, memoSet)
+          const [identity, updatedMemoList] = entity.normalizeExtract(refData, memoList, reverseData)
 
           return [
             memoItem.set(field, identity),
-            updatedMemoSet
+            updatedMemoList
           ]
         }
       }
 
-      return [memoItem, memoSet]
-    }, [item, rootSet])
+      return [memoItem, memoList]
+    }, [item, rootList])
 
-
-    return [
-      // identity
-      Map({
-        id:   final.get("id"),
-        type: final.get(GQL_TYPE_KEY)
-      }),
-
-      // itemSet with current item pushed
-      updatedSet.push(final)
-    ]
+    return [ itemId, updatedList.push(result) ]
   }
 
   _gql_gatherResponseData(queryName, response) {
@@ -119,10 +139,10 @@ let IGraphQL = (superclass) => class GraphQL extends superclass {
     })
   }
 
-  _gql_extractQueryStatement(name) {
+  extractQueryStatement(name) {
     const queryOp = this.constructor.graphOps.getIn(["query", name])
     let method    = name
-    const arglist = queryOp.args
+    const arglist = queryOp && queryOp.args
     if(arglist) {
       const args = Object.entries(arglist).map(([k, v]) => {
         return(k + ": " + this.opts.get(k))
@@ -136,7 +156,7 @@ let IGraphQL = (superclass) => class GraphQL extends superclass {
 
   _gql_execQuery(name) {
     // Extract query arguments from opt keys
-    const method = this._gql_extractQueryStatement(name)
+    const method = this.extractQueryStatement(name)
 
     return this.fetch({
       body: {
@@ -155,12 +175,11 @@ let IGraphQL = (superclass) => class GraphQL extends superclass {
     super(checkOpts(raw))
 
     if (this.isImplemented("Collection")) {
-      this._gql_entityConstructor = this.constructor.entity
+      this._gql_entityConstructor = this.constructor.itemConstructor
     } else {
       this._gql_entityConstructor = this.constructor
     }
   }
-
 
   get headers() {
     return({
@@ -169,13 +188,16 @@ let IGraphQL = (superclass) => class GraphQL extends superclass {
     })
   }
 
-
   graphQuery(name) {
     return this._gql_execQuery(name)
   }
 }
 
 IGraphQL = implement(IStore, IFetch, ISchema)(IGraphQL)
+
+export const graphQuery = (klass, opts) => {
+  klass.graphOps = klass.graphOps.setIn(["query", opts.name], opts)
+}
 
 export { IGraphQL }
 export default build(IGraphQL)
