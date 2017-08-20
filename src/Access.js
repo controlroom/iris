@@ -53,6 +53,15 @@ let IAccess = (superclass) => {
     }
 
     /**
+     * Non Overridable
+     * @arg {(Array|string)} path
+     * @type {Immutable.Collection}
+     */
+    _getIn(path) {
+      return this.state.getIn(this.appendPath(path))
+    }
+
+    /**
      * @type {Immutable.Collection}
      */
     get(path) {

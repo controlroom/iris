@@ -120,8 +120,7 @@ class DataRevaluator {
    * @returns {[Map, Map]}
    */
   extractPropTypes(props) {
-    return Object.keys(props).reduce((memo, k) => {
-      const v = props[k]
+    return Object.entries(props).reduce((memo, [k, v]) => {
       isImplemented(v, "Snitch")
         ? memo[1] = memo[1].set(k, v)
         : memo[0] = memo[0].set(k, v)
@@ -163,7 +162,9 @@ export default (irisFn) => {
           ...props
         }
 
-        firstRun ? this.evaluator.boot(nextProps) : this.evaluator.evaluate(nextProps)
+        firstRun
+         ? this.evaluator.boot(nextProps)
+         : this.evaluator.evaluate(nextProps)
       }
 
       storeChanged() {

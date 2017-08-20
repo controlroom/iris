@@ -21,12 +21,14 @@ const types = {
   isIdType: type => type.kind === "id",
   Id: (type = types.Integer()) => ({
     check: type.check,
+    gqlType: "ID",
     kind: "id"
   }),
 
   isBooleanType: type => type.kind === "bool",
   Boolean: (...opts) => ({
     opts,
+    gqlType: "Boolean",
     check: val => typeof(val) === "boolean",
     kind: "bool"
   }),
@@ -34,6 +36,7 @@ const types = {
   isIntegerType: type => type.kind === "int",
   Integer: (...opts) => ({
     opts,
+    gqlType: "Int",
     check: Number.isInteger,
     kind: "int"
   }),
@@ -41,13 +44,16 @@ const types = {
   isFloatType: type => type.kind === "float",
   Float: (...opts) => ({
     opts,
+    gqlType: "Float",
     check: val => typeof(val) === "number" && !Number.isInteger(val),
     kind: "float"
   }),
 
   isEnumType: type => type.kind === "enum",
-  Enum: (set) => ({
+  Enum: (name, set) => ({
     set,
+    name,
+    gqlType: name,
     check: set.has,
     kind: "enum"
   }),
@@ -55,6 +61,7 @@ const types = {
   isStringType: type => type.kind === "string",
   String: (...opts) => ({
     opts,
+    gqlType: "String",
     check: val => typeof(val) === "string",
     kind: "string"
   }),

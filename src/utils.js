@@ -113,3 +113,7 @@ export const log = (level, ...message) => {
     console[level](...message);
   }
 }
+
+export const tempId = () => {
+  return -(Math.floor(Math.random() * Number.MAX_SAFE_INTEGER));
+}

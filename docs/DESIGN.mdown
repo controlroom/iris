@@ -1,0 +1,52 @@
+Iris (DAO) Data Access Objects
+  - Typed Schemas
+    - You can define a schema for an Iris DAO. Schemas are static and do not
+      change throughout the life of an object.
+  - Cursor Driven
+    - Iris DAOs behave like a typical Immutable.js Map or List, however under
+      the hood they work quite differently. When you traverse into to a nested
+      map, or list you are not actually interacting with those raw objects. Iris
+      keeps track of your path at all times. Because
+  - Snapshot Aware
+
+  - Immutable
+    - You must explicitly update the state of an Iris object to allow it
+      to reflect new changes in its data: `item.updateState().get("value")`
+    - `updateState()` is immutable as it creates a new Iris object
+
+Entity
+  Create a new Entity:
+    Entity.build({store})
+
+  Lookup current Entity:
+    new Entity({store, id: "abc1234"})
+
+  An entity might be synced to the server or not
+
+
+Collection
+
+>
+> (Iris): Decorator over data returned from a GraphQL query, providing getters and
+> setters for data retrieval and mutations. An Iris will often map 1:1 for an
+> object type in GraphQL parlance.
+>   - (Query): A selector will have one of these. It is a static field that can be
+>     used to nest Selectors when creating a root query.
+>   - (Mutation): There can be many of these based on the needs for a mutation
+>   - (Meta): A set of ancillary data that will be accessed in the same way as the
+>     query data, but will never persist to the server. Selectors that are
+>     listening for changes will also update in the same was as if query data is
+>     updated.
+>
+> An iris is just a view into the data returned from a GraphQL query. It does not
+> have the power to affect the data directly.
+>
+> You can update a view of the data from the cache, or you can affect the actual
+> data with a mutation response.
+>
+> Truths about Entities:
+>
+> - It will _always_ have an id
+> - It _can_ contain a schema
+> - It _can_ contain metadata
+> - It _can_ have domain data, specified by the schema

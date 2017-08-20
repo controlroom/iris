@@ -4,6 +4,12 @@
  * A collection is either pointing to the base collection (root), or it is a
  * subset that is located in another place
  *
+ * -- Redirection:
+ *
+ * An Entity can have a metadata flag set of "__redirect" which signifies to a
+ * collection / lookup that this is not the correct path and should be immediatly
+ * moved to that other place
+ *
  * @module iris/Collection
  */
 
@@ -29,13 +35,24 @@ let ICollection = (superclass) => {
       const path = opts.get("path")
 
       if(!path) {
-        this.opts = opts.set("path", [ROOT_KEY, this.entity.type])
+        this.opts = opts.set("path", [ROOT_KEY, this.itemConstructor.type])
       }
     }
 
     get itemConstructor() {
       return this.opts.get("itemConstructor") || this.constructor.itemConstructor
     }
+
+    /**
+     * default scope
+     *
+     * Filter out any archived items
+     *
+     * @returns {(List<Entity>|List<Any>)}
+     */
+    // scoped(items) {
+    //   items.filter
+    // }
 
     /**
      * items
@@ -72,7 +89,7 @@ let ICollection = (superclass) => {
 Iris.Collection(${this.constructor.name})
   path: [${this.path.toJS()}]
 `
-)
+      )
     }
   }
 

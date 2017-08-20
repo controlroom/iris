@@ -37,7 +37,7 @@ describe("Affect", () => {
   })
 
   describe("#merge", () => {
-    it("basic merge", () => {
+    it("can merge basic data", () => {
       const model = modelFrom({ v1: { foo: "bar", a: 1}})
       model.traverse("v1").merge({foo: "bars"})
       expect(model.updateState().data.toJS()).to.eql({ v1: { foo: "bars", a: 1}})

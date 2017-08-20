@@ -1,5 +1,6 @@
 /**
  * Data mutators
+ *
  * @module iris/Affect
  */
 
